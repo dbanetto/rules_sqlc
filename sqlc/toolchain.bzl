@@ -1,13 +1,14 @@
 """This module implements the language-specific toolchain rule.
 """
 
-MylangInfo = provider(
+SqlcInfo = provider(
     doc = "Information about how to invoke the tool executable.",
     fields = {
         "target_tool_path": "Path to the tool executable for the target platform.",
         "tool_files": """Files required in runfiles to make the tool executable available.
 
 May be empty if the target_tool_path points to a locally installed tool binary.""",
+        "tool": "Label of ",
     },
 )
 
@@ -18,37 +19,29 @@ def _to_manifest_path(ctx, file):
     else:
         return ctx.workspace_name + "/" + file.short_path
 
-def _mylang_toolchain_impl(ctx):
-    if ctx.attr.target_tool and ctx.attr.target_tool_path:
-        fail("Can only set one of target_tool or target_tool_path but both were set.")
-    if not ctx.attr.target_tool and not ctx.attr.target_tool_path:
-        fail("Must set one of target_tool or target_tool_path.")
-
-    tool_files = []
-    target_tool_path = ctx.attr.target_tool_path
-
-    if ctx.attr.target_tool:
-        tool_files = ctx.attr.target_tool.files.to_list()
-        target_tool_path = _to_manifest_path(ctx, tool_files[0])
+def _sqlc_toolchain_impl(ctx):
+    tool_files = ctx.attr.target_tool.files.to_list()
+    target_tool_path = _to_manifest_path(ctx, tool_files[0])
 
     # Make the $(tool_BIN) variable available in places like genrules.
     # See https://docs.bazel.build/versions/main/be/make-variables.html#custom_variables
     template_variables = platform_common.TemplateVariableInfo({
-        "MYLANG_BIN": target_tool_path,
+        "SQLC_BIN": target_tool_path,
     })
     default = DefaultInfo(
         files = depset(tool_files),
         runfiles = ctx.runfiles(files = tool_files),
     )
-    mylanginfo = MylangInfo(
+    sqlcinfo = SqlcInfo(
         target_tool_path = target_tool_path,
         tool_files = tool_files,
+        tool = ctx.attr.target_tool,
     )
 
     # Export all the providers inside our ToolchainInfo
     # so the resolved_toolchain rule can grab and re-export them.
     toolchain_info = platform_common.ToolchainInfo(
-        mylanginfo = mylanginfo,
+        sqlcinfo = sqlcinfo,
         template_variables = template_variables,
         default = default,
     )
@@ -58,20 +51,18 @@ def _mylang_toolchain_impl(ctx):
         template_variables,
     ]
 
-mylang_toolchain = rule(
-    implementation = _mylang_toolchain_impl,
+sqlc_toolchain = rule(
+    implementation = _sqlc_toolchain_impl,
     attrs = {
         "target_tool": attr.label(
             doc = "A hermetically downloaded executable target for the target platform.",
-            mandatory = False,
+            mandatory = True,
             allow_single_file = True,
-        ),
-        "target_tool_path": attr.string(
-            doc = "Path to an existing executable for the target platform.",
-            mandatory = False,
+            cfg = "exec",
+            executable = True,
         ),
     },
-    doc = """Defines a mylang compiler/runtime toolchain.
+    doc = """Defines a sqlc compiler toolchain.
 
 For usage see https://docs.bazel.build/versions/main/toolchains.html#defining-toolchains.
 """,

@@ -3,7 +3,7 @@ Add a basic smoke-test target below.
 """
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-# load("@com_myorg_rules_mylang//mylang:defs.bzl", "...")
+load("@gazelle//:def.bzl", "DEFAULT_LANGUAGES", "gazelle", "gazelle_binary")
 
 # Replace with a usage of your rule/macro
 filegroup(name = "empty")
@@ -14,4 +14,15 @@ build_test(
         # targets you add above
         ":empty",
     ],
+)
+
+gazelle_binary(
+    name = "gazelle-all",
+    languages = DEFAULT_LANGUAGES + [],
+)
+
+# gazelle:proto package
+gazelle(
+    name = "gazelle",
+    gazelle = ":gazelle-all",
 )

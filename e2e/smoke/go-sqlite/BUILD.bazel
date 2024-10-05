@@ -1,0 +1,15 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go-sqlite_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/dbanetto/rules_sqlc/e2e/smoke/go-sqlite",
+    visibility = ["//visibility:private"],
+    deps = ["//go-sqlite/db"],
+)
+
+go_binary(
+    name = "go-sqlite",
+    embed = [":go-sqlite_lib"],
+    visibility = ["//visibility:public"],
+)

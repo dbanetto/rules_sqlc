@@ -1,0 +1,19 @@
+load("@rules_go//go:def.bzl", "go_library", "go_source")
+load("@rules_sqlc//sqlc:defs.bzl", "sqlc_generate_go")
+
+# gazelle:ignore empty.go
+
+sqlc_generate_go(
+    name = "test",
+    engine = "sqlite",
+    package = "db",
+    queries = [":query.sql"],
+    schema = [":schema.sql"],
+)
+
+go_library(
+    name = "db",
+    srcs = [":test"],
+    importpath = "github.com/dbanetto/rules_sqlc/e2e/smoke/go-sqlite/db",
+    visibility = ["//visibility:public"],
+)

@@ -20,25 +20,31 @@ with only the toolchain attribute pointing into the platform-specific repositori
 # Add more platforms as needed to mirror all the binaries
 # published by the upstream project.
 PLATFORMS = {
-    "x86_64-apple-darwin": struct(
+    "darwin_amd64": struct(
         compatible_with = [
             "@platforms//os:macos",
             "@platforms//cpu:x86_64",
         ],
     ),
-    "aarch64-apple-darwin": struct(
+    "darwin_arm64": struct(
         compatible_with = [
             "@platforms//os:macos",
             "@platforms//cpu:aarch64",
         ],
     ),
-    "x86_64-unknown-linux-gnu": struct(
+    "linux_amd64": struct(
         compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
         ],
     ),
-    "x86_64-pc-windows-msvc": struct(
+    "linux_arm64": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:aarch64",
+        ],
+    ),
+    "windows_amd64": struct(
         compatible_with = [
             "@platforms//os:windows",
             "@platforms//cpu:x86_64",
@@ -62,8 +68,8 @@ def _toolchains_repo_impl(repository_ctx):
 toolchain(
     name = "{platform}_toolchain",
     exec_compatible_with = {compatible_with},
-    toolchain = "@{user_repository_name}_{platform}//:mylang_toolchain",
-    toolchain_type = "@com_myorg_rules_mylang//mylang:toolchain_type",
+    toolchain = "@{user_repository_name}_{platform}//:sqlc_toolchain",
+    toolchain_type = "@rules_sqlc//sqlc:toolchain_type",
 )
 """.format(
             platform = platform,
