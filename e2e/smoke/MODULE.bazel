@@ -10,3 +10,10 @@ local_path_override(
 
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
+
+
+sqlc = use_extension("@rules_sqlc//sqlc:extensions.bzl", "sqlc")
+sqlc.toolchain(sqlc_version = "1.27.0")
+use_repo(sqlc, "sqlc_toolchains")
+
+register_toolchains("@sqlc_toolchains//:all")

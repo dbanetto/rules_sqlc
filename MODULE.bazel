@@ -13,9 +13,3 @@ bazel_dep(name = "gazelle", version = "0.35.0", dev_dependency = True, repo_name
 bazel_dep(name = "bazel_skylib_gazelle_plugin", version = "1.4.1", dev_dependency = True)
 bazel_dep(name = "aspect_bazel_lib", version = "1.32.1", dev_dependency = True)
 bazel_dep(name = "buildifier_prebuilt", version = "7.3.1", dev_dependency = True)
-
-sqlc = use_extension("//sqlc:extensions.bzl", "sqlc")
-sqlc.toolchain(sqlc_version = "1.27.0")
-use_repo(sqlc, "sqlc_toolchains")
-
-register_toolchains("@sqlc_toolchains//:all")
