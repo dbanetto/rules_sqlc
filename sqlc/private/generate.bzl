@@ -4,8 +4,13 @@ def _sqlc_generate_go(ctx):
 
     out_db = ctx.actions.declare_file("db.go")
     out_models = ctx.actions.declare_file("models.go")
-    out_queries = ctx.actions.declare_file("query.sql.go")
-    outputs = [out_db, out_models, out_queries]
+    out_querier = ctx.actions.declare_file("querier.go")
+    outputs = [out_db, out_models, out_querier]
+
+    # Each query file will generate a .go file based off its name.
+    for query_file in ctx.files.queries:
+        query_output = ctx.actions.declare_file("%s.go" % query_file.basename)
+        outputs.append(query_output)
 
     # Generate the configuration file in the v2 format
     # See https://docs.sqlc.dev/en/latest/reference/config.html
@@ -22,6 +27,10 @@ def _sqlc_generate_go(ctx):
                 "schema": [ relative + "/" + f.path for f in ctx.files.schema ],
                 "gen": {
                     "go":{
+                        "emit_db_tags": True,
+                        "emit_interface": True,
+                        "emit_json_tags": True,
+                        "emit_sql_as_comment": True,
                         "package": ctx.attr.package,
                         "out": relative + "/" + out_db.dirname,
                     },
