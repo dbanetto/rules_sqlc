@@ -2,10 +2,13 @@
 def _sqlc_generate_go(ctx):
     toolchain = ctx.toolchains["//sqlc:toolchain_type"]
 
-    out_db = ctx.actions.declare_file("db.go")
-    out_models = ctx.actions.declare_file("models.go")
-    out_querier = ctx.actions.declare_file("querier.go")
-    outputs = [out_db, out_models, out_querier]
+    out_db = ctx.actions.declare_file(ctx.label.name + "_db.go")
+    out_models = ctx.actions.declare_file(ctx.label.name + "_models.go")
+    outputs = [out_db, out_models]
+
+    if len(ctx.files.queries) > 1:
+        out_querier = ctx.actions.declare_file(ctx.label.name + "_querier.go")
+        outputs.append(out_querier)
 
     # Each query file will generate a .go file based off its name.
     for query_file in ctx.files.queries:
@@ -33,6 +36,9 @@ def _sqlc_generate_go(ctx):
                         "emit_sql_as_comment": True,
                         "package": ctx.attr.package,
                         "out": relative + "/" + out_db.dirname,
+                        "output_db_file_name": ctx.label.name + "_db.go",
+                        "output_models_file_name": ctx.label.name + "_models.go",
+                        "output_querier_file_name": ctx.label.name + "_querier.go",
                     },
                 },
             }
@@ -70,14 +76,16 @@ sqlc_generate_go = rule(
             values = ["postgresql", "mysql", "sqlite"],
         ),
         "schema": attr.label_list(
-            doc = "SQL schema",
+            doc = "SQL schema files",
             allow_files = [".sql"],
         ),
         "queries": attr.label_list(
-            doc = "SQL Schema",
+            doc = "SQL query files",
             allow_files = [".sql"],
         ),
-        "package": attr.string(),
+        "package": attr.string(
+            doc = "Go package name"
+        ),
     },
     toolchains = ["//sqlc:toolchain_type"],
 )
