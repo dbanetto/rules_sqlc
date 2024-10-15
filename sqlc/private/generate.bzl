@@ -6,7 +6,7 @@ def _sqlc_generate_go(ctx):
     out_models = ctx.actions.declare_file(ctx.label.name + "_models.go")
     outputs = [out_db, out_models]
 
-    if len(ctx.files.queries) > 1:
+    if len(ctx.files.queries) > 0:
         out_querier = ctx.actions.declare_file(ctx.label.name + "_querier.go")
         outputs.append(out_querier)
 
